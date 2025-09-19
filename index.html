@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DorkCraft - OSINT Dork Builder</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300ff88'/%3E%3Cstop offset='100%25' style='stop-color:%230099ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M16 2L4 8v16l12 6 12-6V8L16 2zm0 4l8 4v12l-8 4-8-4V10l8-4z' fill='url(%23grad)'/%3E%3Cpath d='M12 12h8v2h-8zm0 4h8v2h-8zm0 4h6v2h-6z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #00ff88;
+        --primary-dark: #00cc6a;
+        --primary-glow: rgba(0, 255, 136, 0.3);
+        --secondary: #0099ff;
+        --secondary-glow: rgba(0, 153, 255, 0.3);
+        --accent: #ff0080;
+        --bg-dark: #0a0a0a;
+        --bg-card: rgba(0, 255, 136, 0.03);
+        --bg-card-hover: rgba(0, 255, 136, 0.08);
+        --border: rgba(0, 255, 136, 0.2);
+        --border-hover: rgba(0, 255, 136, 0.5);
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --text-hint: #666;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--bg-dark);
+        background-image: radial-gradient(
+            circle at 20% 80%,
+            rgba(0, 255, 136, 0.05) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(0, 153, 255, 0.05) 0%,
+            transparent 50%
+          );
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px var(--primary-glow);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      .logo-icon svg {
+        width: 28px;
+        height: 28px;
+        fill: var(--bg-dark);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 20px var(--primary-glow);
+        }
+        50% {
+          box-shadow: 0 0 30px var(--primary-glow),
+            0 0 40px rgba(0, 255, 136, 0.2);
+        }
+      }
+
+      .logo {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 30px var(--primary-glow);
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+
+      .main-content {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        align-items: start;
+      }
+
+      .controls-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .engine-selector {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .engine-selector:hover {
+        background: var(--bg-card-hover);
+        border-color: var(--border-hover);
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      .input-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+
+      .input-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .input-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          transparent,
+          var(--primary-glow),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+      }
+
+      .input-card:hover::before {
+        opacity: 1;
+      }
+
+      .input-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.15);
+      }
+
+      .input-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--primary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .input-hint {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin-bottom: 0.8rem;
+        font-style: italic;
+        opacity: 0.9;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text-primary);
+        font-family: "Fira Code", monospace;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        outline: none;
+        margin-top: auto;
+      }
+
+      select {
+        cursor: pointer;
+      }
+
+      select option {
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        padding: 0.5rem;
+        border: none;
+      }
+
+      /* Custom select styling for better theme integration */
+      select::-ms-expand {
+        display: none;
+      }
+
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="%2300ff88"><path d="M1 1l5 5 5-5"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 12px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+      }
+
+      input::placeholder {
+        color: var(--text-hint);
+        font-style: italic;
+      }
+
+      .output-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .output-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .output-card:hover {
+        background: var(--bg-card-hover);
+        border-color: var(--border-hover);
+      }
+
+      .output-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+      }
+
+      .output-title {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 1rem;
+      }
+
+      .output-display {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        min-height: 120px;
+        font-family: "Fira Code", monospace;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-all;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .empty-state {
+        color: var(--text-hint);
+        text-align: center;
+        font-style: italic;
+        opacity: 0.8;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        padding: 0.8rem 1.5rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-primary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .btn:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary);
+        color: var(--bg-dark);
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      .btn-secondary {
+        border-color: var(--secondary);
+        color: var(--secondary);
+      }
+
+      .btn-secondary:hover {
+        background: var(--secondary);
+        color: var(--bg-dark);
+        box-shadow: 0 0 20px var(--secondary-glow);
+      }
+
+      .btn-accent {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .btn-accent:hover {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn:disabled:hover {
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .footer {
+        margin-top: 3rem;
+        padding: 3rem 0;
+        border-top: 1px solid var(--border);
+      }
+
+      .about-section {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: left;
+      }
+
+      .about-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .about-content {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+      }
+
+      .about-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .about-quote {
+        background: var(--bg-card);
+        border-left: 4px solid var(--primary);
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-radius: 0 8px 8px 0;
+        font-style: italic;
+        color: var(--primary);
+        font-size: 1.1rem;
+        text-align: center;
+      }
+
+      .about-footer {
+        text-align: center;
+        color: var(--text-hint);
+        font-size: 0.9rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: var(--bg-dark);
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transform: translateX(300px);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+
+      .toast.show {
+        transform: translateX(0);
+      }
+
+      @media (max-width: 1024px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .input-grid {
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+      }
+
+      @media (max-width: 768px) {
+        .logo {
+          font-size: 2.5rem;
+        }
+
+        .logo-container {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .logo-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .logo-icon svg {
+          width: 24px;
+          height: 24px;
+        }
+
+        .input-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .button-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .about-title {
+          font-size: 1.5rem;
+        }
+
+        .about-content {
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"
+              />
+              <path d="M7.5 9h4v1h-4zm0-2h4v1h-4z" />
+            </svg>
+          </div>
+          <h1 class="logo">DorkCraft</h1>
+        </div>
+        <p class="subtitle">
+          Advanced Search Engine Dork Builder for OSINT Professionals
+        </p>
+      </div>
+
+      <div class="main-content">
+        <div class="controls-section">
+          <div class="engine-selector">
+            <label for="engine">Search Engine</label>
+            <div class="input-hint">
+              Choose your preferred search engine for the generated dork
+            </div>
+            <select id="engine">
+              <option value="google">Google</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="bing">Bing</option>
+            </select>
+          </div>
+
+          <div class="input-grid">
+            <div class="input-card">
+              <label for="domain">Domain Targeting</label>
+              <div class="input-hint">
+                Use commas for multiple: "example.com, github.com"
+              </div>
+              <input id="domain" placeholder="example.com" />
+            </div>
+
+            <div class="input-card">
+              <label for="intitle">Page Title Keywords</label>
+              <div class="input-hint">
+                Use commas for multiple: "login, admin, dashboard"
+              </div>
+              <input id="intitle" placeholder="login" />
+            </div>
+
+            <div class="input-card">
+              <label for="inurl">URL Keywords</label>
+              <div class="input-hint">
+                Use commas for multiple: "config, backup, admin"
+              </div>
+              <input id="inurl" placeholder="admin" />
+            </div>
+
+            <div class="input-card">
+              <label for="filetype">File Extensions</label>
+              <div class="input-hint">
+                Use commas for multiple: "pdf, docx, xlsx, txt"
+              </div>
+              <input id="filetype" placeholder="pdf" />
+            </div>
+
+            <div class="input-card">
+              <label for="intext">Content Keywords</label>
+              <div class="input-hint">
+                Use commas for multiple: "password, confidential"
+              </div>
+              <input id="intext" placeholder="password" />
+            </div>
+
+            <div class="input-card">
+              <label for="exact">Exact Phrase</label>
+              <div class="input-hint">
+                Searches for the exact phrase in quotes
+              </div>
+              <input id="exact" placeholder="exact phrase to search" />
+            </div>
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-card">
+            <div class="output-header">
+              <span class="output-title">Generated Dork</span>
+            </div>
+            <div class="output-display" id="output">
+              <div class="empty-state">
+                Your generated dork will appear here...
+              </div>
+            </div>
+          </div>
+
+          <div class="button-grid">
+            <button class="btn btn-primary" onclick="generateDork()">
+              Generate Dork
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="searchBtn"
+              onclick="executeSearch()"
+              disabled
+            >
+              Execute Search
+            </button>
+            <button class="btn btn-accent" onclick="copyDork()">
+              Copy to Clipboard
+            </button>
+            <button class="btn btn-accent" onclick="clearAll()">
+              Clear All Fields
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="about-section">
+          <h2 class="about-title">About DorkCraft</h2>
+
+          <div class="about-content">
+            DorkCraft is a
+            <strong>simple, single-purpose OSINT helper</strong> built to make
+            search engine dorking a little easier. Instead of memorizing complex
+            operators, you can
+            <strong>mix and match common dork filters</strong> (site, intitle,
+            inurl, filetype, etc.), instantly generate a ready-to-use query, and
+            jump straight to Google, Bing, or DuckDuckGo.
+          </div>
+
+          <div class="about-content">
+            This isn't a massive framework or an automated scraper—it's just a
+            <strong>small, lightweight tool</strong> created to solve
+            <strong>one everyday pain point</strong> for security researchers,
+            penetration testers, and curious investigators:
+          </div>
+
+          <div class="about-quote">
+            "How do I quickly craft and share a clean dork query?"
+          </div>
+
+          <div class="about-content">
+            Use it responsibly, stay within legal boundaries, and let the search
+            engines do the crawling. Simple idea. Minimal interface.
+            <strong>One problem solved well.</strong>
+          </div>
+
+          <div class="about-footer">
+            Built with ❤️ for the OSINT and cybersecurity community
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentSearchURL = "";
+
+      function generateDork() {
+        const inputs = {
+          engine: document.getElementById("engine").value,
+          domain: document.getElementById("domain").value.trim(),
+          intitle: document.getElementById("intitle").value.trim(),
+          inurl: document.getElementById("inurl").value.trim(),
+          filetype: document.getElementById("filetype").value.trim(),
+          intext: document.getElementById("intext").value.trim(),
+          exact: document.getElementById("exact").value.trim(),
+        };
+
+        // Check if at least one field is filled
+        const hasInput = Object.entries(inputs).some(
+          ([key, value]) => key !== "engine" && value
+        );
+
+        if (!hasInput) {
+          showToast("Please fill in at least one search field", "error");
+          return;
+        }
+
+        // Build the dork query
+        const dorkParts = [];
+
+        if (inputs.domain) {
+          const domains = inputs.domain
+            .split(",")
+            .map((d) => d.trim())
+            .filter((d) => d);
+          if (domains.length === 1) {
+            dorkParts.push(`site:${domains[0]}`);
+          } else if (domains.length > 1) {
+            dorkParts.push(domains.map((d) => `site:${d}`).join(" OR "));
+          }
+        }
+
+        if (inputs.intitle) {
+          const titles = inputs.intitle
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t);
+          if (titles.length === 1) {
+            dorkParts.push(`intitle:"${titles[0]}"`);
+          } else if (titles.length > 1) {
+            dorkParts.push(titles.map((t) => `intitle:"${t}"`).join(" OR "));
+          }
+        }
+
+        if (inputs.inurl) {
+          const urls = inputs.inurl
+            .split(",")
+            .map((u) => u.trim())
+            .filter((u) => u);
+          if (urls.length === 1) {
+            dorkParts.push(`inurl:${urls[0]}`);
+          } else if (urls.length > 1) {
+            dorkParts.push(urls.map((u) => `inurl:${u}`).join(" OR "));
+          }
+        }
+
+        if (inputs.filetype) {
+          const types = inputs.filetype
+            .split(",")
+            .map((f) => f.trim())
+            .filter((f) => f);
+          if (types.length === 1) {
+            dorkParts.push(`filetype:${types[0]}`);
+          } else if (types.length > 1) {
+            dorkParts.push(types.map((f) => `filetype:${f}`).join(" OR "));
+          }
+        }
+
+        if (inputs.intext) {
+          const texts = inputs.intext
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t);
+          if (texts.length === 1) {
+            dorkParts.push(`intext:"${texts[0]}"`);
+          } else if (texts.length > 1) {
+            dorkParts.push(texts.map((t) => `intext:"${t}"`).join(" OR "));
+          }
+        }
+
+        if (inputs.exact) {
+          dorkParts.push(`"${inputs.exact}"`);
+        }
+
+        const query = dorkParts.join(" ");
+
+        // Build search URL
+        const baseUrls = {
+          google: "https://www.google.com/search?q=",
+          duckduckgo: "https://duckduckgo.com/?q=",
+          bing: "https://www.bing.com/search?q=",
+        };
+
+        const outputElement = document.getElementById("output");
+        const searchBtn = document.getElementById("searchBtn");
+
+        if (query.trim()) {
+          outputElement.textContent = query;
+          outputElement.style.textAlign = "left";
+          outputElement.style.alignItems = "flex-start";
+          currentSearchURL =
+            baseUrls[inputs.engine] + encodeURIComponent(query);
+          searchBtn.disabled = false;
+          showToast("Dork generated successfully!", "success");
+        } else {
+          outputElement.innerHTML =
+            '<div class="empty-state">Please enter at least one search parameter</div>';
+          outputElement.style.textAlign = "center";
+          outputElement.style.alignItems = "center";
+          searchBtn.disabled = true;
+          showToast("No valid search parameters provided", "error");
+        }
+      }
+
+      function executeSearch() {
+        if (currentSearchURL) {
+          window.open(currentSearchURL, "_blank");
+          showToast("Opening search in new tab...", "success");
+        } else {
+          showToast("Please generate a dork first", "error");
+        }
+      }
+
+      function copyDork() {
+        const output = document.getElementById("output");
+        const text = output.textContent;
+
+        if (
+          text &&
+          !text.includes("Your generated dork") &&
+          !text.includes("Please enter")
+        ) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              showToast("Dork copied to clipboard!", "success");
+            })
+            .catch(() => {
+              showToast("Failed to copy to clipboard", "error");
+            });
+        } else {
+          showToast("No dork to copy", "error");
+        }
+      }
+
+      function clearAll() {
+        document
+          .querySelectorAll("input")
+          .forEach((input) => (input.value = ""));
+        document.getElementById("engine").value = "google";
+        const outputElement = document.getElementById("output");
+        outputElement.innerHTML =
+          '<div class="empty-state">Your generated dork will appear here...</div>';
+        outputElement.style.textAlign = "center";
+        outputElement.style.alignItems = "center";
+        document.getElementById("searchBtn").disabled = true;
+        currentSearchURL = "";
+        showToast("All fields cleared", "success");
+      }
+
+      function showToast(message, type = "success") {
+        // Remove existing toast
+        const existingToast = document.querySelector(".toast");
+        if (existingToast) {
+          existingToast.remove();
+        }
+
+        // Create new toast
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.textContent = message;
+
+        if (type === "error") {
+          toast.style.background = "#ff4444";
+          toast.style.color = "white";
+        }
+
+        document.body.appendChild(toast);
+
+        // Show toast
+        setTimeout(() => toast.classList.add("show"), 100);
+
+        // Hide and remove toast
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Add keyboard shortcuts
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && e.key === "Enter") {
+          generateDork();
+        } else if (e.ctrlKey && e.key === "c" && e.shiftKey) {
+          copyDork();
+        }
+      });
+    </script>
+  </body>
+</html>
