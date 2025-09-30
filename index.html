@@ -3,7 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DorkCraft - OSINT Dork Builder</title>
+    <title>DorkCraft - Advanced OSINT Dork Builder</title>
+    <meta
+      name="description"
+      content="DorkCraft is a powerful OSINT tool for building advanced Google dorks. Create complex search queries with simple and advanced modes. Perfect for cybersecurity professionals and researchers."
+    />
+    <meta
+      name="keywords"
+      content="osint, google dorks, search queries, cybersecurity, dorking, advanced search, boolean logic, security research"
+    />
+    <meta name="robots" content="index, nofollow" />
     <link
       rel="icon"
       type="image/svg+xml"
@@ -13,6 +22,8 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="canonical" href="https://dorkcraft.vercel.app/" />
+
     <style>
       :root {
         --primary: #00ff88;
@@ -21,6 +32,7 @@
         --secondary: #0099ff;
         --secondary-glow: rgba(0, 153, 255, 0.3);
         --accent: #ff0080;
+        --accent-glow: rgba(255, 0, 128, 0.3);
         --bg-dark: #0a0a0a;
         --bg-card: rgba(0, 255, 136, 0.03);
         --bg-card-hover: rgba(0, 255, 136, 0.08);
@@ -29,6 +41,9 @@
         --text-primary: #ffffff;
         --text-secondary: #a0a0a0;
         --text-hint: #666;
+        --operator-and: #00ff88;
+        --operator-or: #0099ff;
+        --operator-not: #ff0080;
       }
 
       * {
@@ -56,7 +71,7 @@
       }
 
       .container {
-        max-width: 1400px;
+        max-width: 1600px;
         margin: 0 auto;
         padding: 1rem;
         min-height: 100vh;
@@ -64,178 +79,232 @@
         flex-direction: column;
       }
 
-      .header {
-        text-align: center;
-        margin-bottom: 2rem;
-        position: relative;
+      .compact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
       }
 
-      .logo-container {
+      .logo-section {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 0.5rem;
+        gap: 0.75rem;
       }
 
-      .logo-icon {
-        width: 48px;
-        height: 48px;
+      .logo-icon-small {
+        width: 36px;
+        height: 36px;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 8px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 20px var(--primary-glow);
-        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 15px var(--primary-glow);
       }
 
-      .logo-icon svg {
-        width: 28px;
-        height: 28px;
-        fill: var(--bg-dark);
+      .logo-icon-small svg {
+        width: 20px;
+        height: 20px;
+        color: var(--bg-dark);
       }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          box-shadow: 0 0 20px var(--primary-glow);
-        }
-        50% {
-          box-shadow: 0 0 30px var(--primary-glow),
-            0 0 40px rgba(0, 255, 136, 0.2);
-        }
-      }
-
-      .logo {
-        font-size: 3rem;
+      .logo-compact {
+        font-size: 1.75rem;
         font-weight: 700;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        text-shadow: 0 0 30px var(--primary-glow);
       }
 
-      .subtitle {
-        font-size: 1.1rem;
+      .logo-tagline {
+        font-size: 0.9rem;
         color: var(--text-secondary);
-        font-weight: 300;
+        font-weight: 400;
+        margin-left: 0.5rem;
+        font-style: italic;
+        opacity: 0.8;
       }
 
-      .main-content {
-        flex: 1;
+      .mode-toggle-compact {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 0.35rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .mode-toggle-compact input[type="radio"] {
+        display: none;
+      }
+
+      .mode-label-compact {
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+      }
+
+      .mode-label-compact:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .mode-toggle-compact input[type="radio"]:checked + .mode-label-compact {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--bg-dark);
+        border-color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+      }
+
+      .simple-only {
+        display: flex;
+      }
+
+      .advanced-only {
+        display: none;
+      }
+
+      body.advanced-mode .simple-only {
+        display: none;
+      }
+
+      body.advanced-mode .advanced-only {
+        display: block;
+      }
+
+      body.advanced-mode .action-buttons-compact .advanced-only {
+        display: flex;
+      }
+
+      body.advanced-mode .operator-row {
+        display: flex;
+      }
+
+      /* Fix: Ensure blocks section is hidden in simple mode */
+      .blocks-section {
+        display: none !important;
+      }
+
+      body.advanced-mode .blocks-section {
+        display: flex !important;
+      }
+
+      .main-layout {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 450px 1fr;
         gap: 2rem;
+        margin-bottom: 2rem;
         align-items: start;
       }
 
-      .controls-section {
+      .left-column {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
       }
 
-      .engine-selector {
+      .input-section {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 1.5rem;
         backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
       }
 
-      .engine-selector:hover {
-        background: var(--bg-card-hover);
-        border-color: var(--border-hover);
-        box-shadow: 0 0 20px var(--primary-glow);
-      }
-
-      .input-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
-      }
-
-      .input-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.5rem;
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+      .section-header {
         display: flex;
-        flex-direction: column;
-        height: 100%;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
       }
 
-      .input-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          135deg,
-          transparent,
-          var(--primary-glow),
-          transparent
-        );
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: 0;
+      .section-header.collapsible {
+        cursor: pointer;
+        user-select: none;
       }
 
-      .input-card:hover::before {
-        opacity: 1;
-      }
-
-      .input-card:hover {
-        border-color: var(--border-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.15);
-      }
-
-      .input-card > * {
-        position: relative;
-        z-index: 1;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
+      .section-header.collapsible:hover .section-title-small {
         color: var(--primary);
-        font-size: 0.9rem;
+      }
+
+      .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
 
-      .input-hint {
+      .section-title-small {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: color 0.2s ease;
+      }
+
+      .collapse-icon {
+        font-size: 0.85rem;
+        color: var(--text-hint);
+        transition: transform 0.3s ease;
+      }
+
+      .collapse-icon.collapsed {
+        transform: rotate(-90deg);
+      }
+
+      .input-row-full {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .input-row-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .input-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
         font-size: 0.8rem;
-        color: #9ca3af;
-        margin-bottom: 0.8rem;
-        font-style: italic;
-        opacity: 0.9;
+        font-weight: 500;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       input,
       select {
         width: 100%;
-        padding: 0.8rem 1rem;
+        padding: 0.6rem 0.85rem;
         border: 1px solid var(--border);
         border-radius: 8px;
         background: rgba(0, 0, 0, 0.3);
         color: var(--text-primary);
         font-family: "Fira Code", monospace;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
         outline: none;
-        margin-top: auto;
       }
 
       select {
@@ -246,10 +315,8 @@
         background: var(--bg-dark);
         color: var(--text-primary);
         padding: 0.5rem;
-        border: none;
       }
 
-      /* Custom select styling for better theme integration */
       select::-ms-expand {
         display: none;
       }
@@ -260,8 +327,8 @@
         -moz-appearance: none;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="%2300ff88"><path d="M1 1l5 5 5-5"/></svg>');
         background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 12px;
+        background-position: right 0.85rem center;
+        background-size: 10px;
       }
 
       input:focus,
@@ -275,37 +342,175 @@
         font-style: italic;
       }
 
-      .output-section {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+      .operator-row {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
       }
 
-      .output-card {
+      .operator-divider {
+        color: var(--text-hint);
+        font-size: 1.2rem;
+        margin: 0 0.25rem;
+      }
+
+      .history-section {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 1.5rem;
         backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-      }
-
-      .output-card:hover {
-        background: var(--bg-card-hover);
-        border-color: var(--border-hover);
-      }
-
-      .output-header {
+        max-height: 400px;
+        overflow: hidden;
         display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
+        flex-direction: column;
+      }
+
+      .history-content {
+        overflow-y: auto;
+        max-height: 300px;
+        padding-right: 0.5rem;
+      }
+
+      .history-content.collapsed {
+        display: none;
+      }
+
+      .query-history-list {
+        display: flex;
+        flex-direction: column;
         gap: 0.5rem;
       }
 
-      .output-title {
-        font-weight: 600;
+      .empty-history {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: var(--text-hint);
+        font-style: italic;
+        font-size: 0.85rem;
+      }
+
+      .history-query-item {
+        background: rgba(0, 0, 0, 0.3);
+        border-left: 3px solid var(--primary);
+        border-radius: 6px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        animation: historyAppear 0.3s ease;
+      }
+
+      @keyframes historyAppear {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .history-query-item:hover {
+        background: rgba(0, 0, 0, 0.5);
+        border-left-color: var(--primary);
+        transform: translateX(3px);
+      }
+
+      .history-query-text {
+        font-family: "Fira Code", monospace;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+        word-break: break-word;
+        margin-bottom: 0.5rem;
+      }
+
+      .history-query-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.7rem;
+        color: var(--text-hint);
+      }
+
+      .history-query-time {
+        font-style: italic;
+      }
+
+      .history-query-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .history-action-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-hint);
+        cursor: pointer;
+        padding: 0.2rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        opacity: 0.6;
+        border-radius: 3px;
+      }
+
+      .history-action-btn:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
         color: var(--primary);
-        font-size: 1rem;
+      }
+
+      .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .actions-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .action-buttons-compact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .output-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .output-stats {
+        display: none;
+        gap: 0.5rem;
+      }
+
+      .stat-badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      .stat-badge strong {
+        color: var(--primary);
+        font-weight: 600;
       }
 
       .output-display {
@@ -313,7 +518,7 @@
         border: 1px solid var(--border);
         border-radius: 8px;
         padding: 1rem;
-        min-height: 120px;
+        min-height: 100px;
         font-family: "Fira Code", monospace;
         font-size: 0.85rem;
         color: var(--text-primary);
@@ -332,27 +537,204 @@
         opacity: 0.8;
       }
 
-      .button-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
+      .blocks-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        max-height: 400px;
+        display: flex;
+        flex-direction: column;
       }
 
-      .btn {
-        padding: 0.8rem 1.5rem;
-        border: 1px solid var(--border);
+      .workspace-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .blocks-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+        min-height: 120px;
+        max-height: 300px;
+      }
+
+      .empty-workspace {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        text-align: center;
+        height: 100%;
+        min-height: 120px;
+      }
+
+      .empty-workspace-icon {
+        margin-bottom: 0.75rem;
+        color: var(--text-hint);
+        opacity: 0.5;
+      }
+
+      .empty-workspace-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+      }
+
+      .empty-workspace-hint {
+        font-size: 0.75rem;
+        color: var(--text-hint);
+        font-style: italic;
+      }
+
+      .query-block {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--border);
         border-radius: 8px;
+        padding: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: blockAppear 0.2s ease;
+      }
+
+      @keyframes blockAppear {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .query-block:hover {
+        border-color: var(--border-hover);
+        background: rgba(0, 255, 136, 0.05);
+        transform: translateX(5px);
+        box-shadow: -3px 0 0 var(--primary);
+      }
+
+      .query-block.selected {
+        border-color: var(--primary);
+        background: rgba(0, 255, 136, 0.1);
+        box-shadow: 0 0 20px var(--primary-glow), -3px 0 0 var(--primary);
+      }
+
+      .query-block.negated {
+        border-color: var(--operator-not);
+        background: rgba(255, 0, 128, 0.05);
+      }
+
+      .query-block.negated.selected {
+        border-color: var(--operator-not);
+        background: rgba(255, 0, 128, 0.15);
+        box-shadow: 0 0 20px var(--accent-glow), -3px 0 0 var(--operator-not);
+      }
+
+      .block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.65rem;
+      }
+
+      .block-type {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: rgba(0, 255, 136, 0.1);
+        padding: 0.2rem 0.45rem;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .block-actions {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+      }
+
+      .not-badge {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--operator-not);
+        background: rgba(255, 0, 128, 0.2);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        margin-right: 0.25rem;
+      }
+
+      .block-action-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-hint);
+        cursor: pointer;
+        padding: 0.2rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        opacity: 0.6;
+        border-radius: 4px;
+      }
+
+      .block-action-btn:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.1);
+      }
+
+      .block-content {
+        margin-bottom: 0.5rem;
+      }
+
+      .block-query {
+        font-family: "Fira Code", monospace;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+        word-break: break-word;
+      }
+
+      .block-footer {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .block-timestamp {
+        font-size: 0.65rem;
+        color: var(--text-hint);
+        font-style: italic;
+      }
+
+      .btn-compact {
+        padding: 0.5rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
         background: transparent;
         color: var(--text-primary);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        font-family: "Poppins", sans-serif;
+        white-space: nowrap;
       }
 
-      .btn::before {
+      .btn-compact::before {
         content: "";
         position: absolute;
         top: 0;
@@ -368,51 +750,206 @@
         transition: left 0.5s ease;
       }
 
-      .btn:hover::before {
+      .btn-compact:hover::before {
         left: 100%;
       }
 
-      .btn-primary {
+      .btn-compact svg {
+        flex-shrink: 0;
+      }
+
+      .btn-primary-compact {
         border-color: var(--primary);
         color: var(--primary);
       }
 
-      .btn-primary:hover {
+      .btn-primary-compact:hover {
         background: var(--primary);
         color: var(--bg-dark);
-        box-shadow: 0 0 20px var(--primary-glow);
+        box-shadow: 0 0 15px var(--primary-glow);
       }
 
-      .btn-secondary {
+      .btn-secondary-compact {
         border-color: var(--secondary);
         color: var(--secondary);
       }
 
-      .btn-secondary:hover {
+      .btn-secondary-compact:hover {
         background: var(--secondary);
         color: var(--bg-dark);
-        box-shadow: 0 0 20px var(--secondary-glow);
+        box-shadow: 0 0 15px var(--secondary-glow);
       }
 
-      .btn-accent {
+      .btn-accent-compact {
         border-color: var(--accent);
         color: var(--accent);
       }
 
-      .btn-accent:hover {
+      .btn-accent-compact:hover {
         background: var(--accent);
         color: white;
-        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+        box-shadow: 0 0 15px var(--accent-glow);
       }
 
-      .btn:disabled {
-        opacity: 0.5;
+      .btn-operator-compact {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .btn-operator-compact.btn-and {
+        border-color: var(--operator-and);
+        color: var(--operator-and);
+      }
+
+      .btn-operator-compact.btn-and:not(:disabled):hover {
+        background: var(--operator-and);
+        color: var(--bg-dark);
+        box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+      }
+
+      .btn-operator-compact.btn-or {
+        border-color: var(--operator-or);
+        color: var(--operator-or);
+      }
+
+      .btn-operator-compact.btn-or:not(:disabled):hover {
+        background: var(--operator-or);
+        color: var(--bg-dark);
+        box-shadow: 0 0 12px rgba(0, 153, 255, 0.4);
+      }
+
+      .btn-operator-compact.btn-not {
+        border-color: var(--operator-not);
+        color: var(--operator-not);
+      }
+
+      .btn-operator-compact.btn-not:not(:disabled):hover {
+        background: var(--operator-not);
+        color: white;
+        box-shadow: 0 0 12px rgba(255, 0, 128, 0.4);
+      }
+
+      .btn-compact:disabled {
+        opacity: 0.3;
         cursor: not-allowed;
       }
 
-      .btn:disabled:hover {
+      .btn-compact:disabled:hover {
         background: transparent;
         box-shadow: none;
+        color: inherit;
+      }
+
+      .btn-compact:disabled::before {
+        display: none;
+      }
+
+      .btn-xs {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 4px;
+      }
+
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        pointer-events: none;
+      }
+
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        min-width: 280px;
+        max-width: 380px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        transform: translateX(450px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        pointer-events: all;
+        backdrop-filter: blur(10px);
+      }
+
+      .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .toast-icon {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .toast-message {
+        flex: 1;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+      }
+
+      .toast-close {
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        color: var(--text-hint);
+        cursor: pointer;
+        padding: 0.2rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+      }
+
+      .toast-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+      }
+
+      .toast-success {
+        border-color: var(--operator-and);
+        box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+      }
+
+      .toast-success .toast-icon {
+        color: var(--operator-and);
+      }
+
+      .toast-error {
+        border-color: var(--operator-not);
+        box-shadow: 0 10px 40px rgba(255, 0, 128, 0.2);
+      }
+
+      .toast-error .toast-icon {
+        color: var(--operator-not);
+      }
+
+      .toast-info {
+        border-color: var(--operator-or);
+        box-shadow: 0 10px 40px rgba(0, 153, 255, 0.2);
+      }
+
+      .toast-info .toast-icon {
+        color: var(--operator-or);
+      }
+
+      .toast-warning {
+        border-color: #ffaa00;
+        box-shadow: 0 10px 40px rgba(255, 170, 0, 0.2);
+      }
+
+      .toast-warning .toast-icon {
+        color: #ffaa00;
       }
 
       .footer {
@@ -428,7 +965,7 @@
       }
 
       .about-title {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 600;
         color: var(--primary);
         margin-bottom: 1.5rem;
@@ -436,7 +973,7 @@
       }
 
       .about-content {
-        font-size: 1rem;
+        font-size: 0.95rem;
         line-height: 1.8;
         color: var(--text-secondary);
         margin-bottom: 1.5rem;
@@ -450,179 +987,846 @@
       .about-quote {
         background: var(--bg-card);
         border-left: 4px solid var(--primary);
-        padding: 1.5rem;
+        padding: 1.25rem;
         margin: 2rem 0;
         border-radius: 0 8px 8px 0;
         font-style: italic;
         color: var(--primary);
-        font-size: 1.1rem;
+        font-size: 1rem;
         text-align: center;
       }
 
       .about-footer {
         text-align: center;
         color: var(--text-hint);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         margin-top: 2rem;
         padding-top: 2rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--primary);
-        color: var(--bg-dark);
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transform: translateX(300px);
-        transition: transform 0.3s ease;
-        z-index: 1000;
+      .history-content::-webkit-scrollbar,
+      .blocks-container::-webkit-scrollbar {
+        width: 6px;
       }
 
-      .toast.show {
-        transform: translateX(0);
+      .history-content::-webkit-scrollbar-track,
+      .blocks-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+
+      .history-content::-webkit-scrollbar-thumb,
+      .blocks-container::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+        transition: background 0.2s ease;
+      }
+
+      .history-content::-webkit-scrollbar-thumb:hover,
+      .blocks-container::-webkit-scrollbar-thumb:hover {
+        background: var(--border-hover);
+      }
+
+      @media (max-width: 1200px) {
+        .main-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .left-column,
+        .right-column {
+          max-width: 100%;
+        }
+
+        .history-section {
+          max-height: 300px;
+        }
+
+        .history-content {
+          max-height: 200px;
+        }
+
+        .blocks-section {
+          max-height: 350px;
+        }
+
+        .blocks-container {
+          max-height: 250px;
+        }
       }
 
       @media (max-width: 1024px) {
-        .main-content {
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
+        .action-buttons-compact {
+          justify-content: stretch;
         }
 
-        .input-grid {
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        .action-buttons-compact .btn-compact {
+          flex: 1;
+        }
+
+        .operator-row {
+          justify-content: center;
         }
       }
 
       @media (max-width: 768px) {
-        .logo {
-          font-size: 2.5rem;
+        .container {
+          padding: 0.75rem;
         }
 
-        .logo-container {
+        .compact-header {
           flex-direction: column;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .logo-section {
+          flex-direction: column;
+          align-items: flex-start;
           gap: 0.5rem;
         }
 
-        .logo-icon {
-          width: 40px;
-          height: 40px;
+        .logo-tagline {
+          margin-left: 0;
+          margin-top: -0.25rem;
         }
 
-        .logo-icon svg {
-          width: 24px;
-          height: 24px;
+        .mode-toggle-compact {
+          width: 100%;
         }
 
-        .input-grid {
+        .mode-label-compact {
+          flex: 1;
+          text-align: center;
+        }
+
+        .main-layout {
+          gap: 1.5rem;
+        }
+
+        .input-section,
+        .history-section,
+        .actions-section,
+        .output-section,
+        .blocks-section {
+          padding: 1rem;
+        }
+
+        .input-row-split {
           grid-template-columns: 1fr;
+          gap: 1rem;
         }
 
-        .button-grid {
-          grid-template-columns: 1fr;
+        .operator-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .operator-row .btn-compact {
+          width: 100%;
+        }
+
+        .operator-divider {
+          display: none;
+        }
+
+        .action-buttons-compact {
+          flex-direction: column;
+        }
+
+        .action-buttons-compact .btn-compact {
+          width: 100%;
+        }
+
+        .section-title {
+          font-size: 0.95rem;
+        }
+
+        .section-title-small {
+          font-size: 0.85rem;
+        }
+
+        input,
+        select {
+          padding: 0.55rem 0.75rem;
+          font-size: 0.8rem;
+        }
+
+        .toast {
+          min-width: auto;
+          max-width: calc(100vw - 40px);
+        }
+
+        .toast-container {
+          right: 10px;
+          left: 10px;
         }
 
         .about-title {
-          font-size: 1.5rem;
+          font-size: 1.4rem;
         }
 
         .about-content {
-          font-size: 0.95rem;
+          font-size: 0.9rem;
         }
+
+        .about-quote {
+          font-size: 0.95rem;
+          padding: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .logo-compact {
+          font-size: 1.5rem;
+        }
+
+        .logo-tagline {
+          font-size: 0.8rem;
+        }
+
+        .logo-icon-small {
+          width: 30px;
+          height: 30px;
+        }
+
+        .logo-icon-small svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        .mode-label-compact {
+          padding: 0.45rem 1rem;
+          font-size: 0.85rem;
+        }
+
+        .section-title {
+          font-size: 0.9rem;
+        }
+
+        .section-title-small {
+          font-size: 0.8rem;
+        }
+
+        label {
+          font-size: 0.75rem;
+        }
+
+        input,
+        select {
+          padding: 0.5rem 0.7rem;
+          font-size: 0.75rem;
+        }
+
+        .btn-compact {
+          padding: 0.45rem 0.7rem;
+          font-size: 0.75rem;
+        }
+
+        .btn-compact svg {
+          width: 12px;
+          height: 12px;
+        }
+
+        .btn-operator-compact {
+          padding: 0.4rem 0.65rem;
+          font-size: 0.7rem;
+        }
+
+        .output-display {
+          padding: 0.85rem;
+          font-size: 0.75rem;
+          min-height: 90px;
+        }
+
+        .query-block {
+          padding: 0.7rem;
+        }
+
+        .block-query {
+          font-size: 0.75rem;
+        }
+
+        .history-query-item {
+          padding: 0.65rem;
+        }
+
+        .history-query-text {
+          font-size: 0.75rem;
+        }
+      }
+
+      .btn-compact:focus,
+      input:focus,
+      select:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      .query-block:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      .query-block:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 3px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .toast {
+          transition: opacity 0.1s ease;
+        }
+
+        .query-block,
+        .history-query-item {
+          animation: none;
+        }
+
+        .collapse-icon {
+          transition: none;
+        }
+      }
+
+      @media (prefers-contrast: high) {
+        :root {
+          --border: rgba(0, 255, 136, 0.5);
+          --border-hover: rgba(0, 255, 136, 0.8);
+          --bg-card: rgba(0, 255, 136, 0.08);
+        }
+
+        .btn-compact {
+          border-width: 2px;
+        }
+
+        .query-block {
+          border-width: 3px;
+        }
+
+        .mode-toggle-compact input[type="radio"]:checked + .mode-label-compact {
+          border-width: 2px;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-dark: #000000;
+          --text-primary: #ffffff;
+        }
+      }
+
+      ::selection {
+        background: var(--primary);
+        color: var(--bg-dark);
+      }
+
+      ::-moz-selection {
+        background: var(--primary);
+        color: var(--bg-dark);
+      }
+
+      .loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.6;
+      }
+
+      .loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 18px;
+        height: 18px;
+        margin: -9px 0 0 -9px;
+        border: 2px solid var(--primary);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .text-left {
+        text-align: left;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .mt-1 {
+        margin-top: 0.5rem;
+      }
+      .mt-2 {
+        margin-top: 1rem;
+      }
+      .mt-3 {
+        margin-top: 1.5rem;
+      }
+
+      .mb-1 {
+        margin-bottom: 0.5rem;
+      }
+      .mb-2 {
+        margin-bottom: 1rem;
+      }
+      .mb-3 {
+        margin-bottom: 1.5rem;
+      }
+
+      .p-1 {
+        padding: 0.5rem;
+      }
+      .p-2 {
+        padding: 1rem;
+      }
+      .p-3 {
+        padding: 1.5rem;
+      }
+
+      @media print {
+        body {
+          background: white;
+          color: black;
+        }
+
+        .compact-header,
+        .input-section,
+        .history-section,
+        .actions-section,
+        .blocks-section,
+        .footer {
+          display: none;
+        }
+
+        .output-display {
+          background: white;
+          border: 1px solid black;
+          color: black;
+        }
+
+        .main-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .output-section {
+          display: block;
+        }
+      }
+
+      .neon-glow {
+        text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary),
+          0 0 30px var(--primary);
+      }
+
+      .cyber-border {
+        position: relative;
+        border: 1px solid var(--primary);
+      }
+
+      .cyber-border::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        z-index: -1;
+        filter: blur(10px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .cyber-border:hover::before {
+        opacity: 0.5;
+      }
+
+      .input-section:hover,
+      .output-section:hover {
+        border-color: var(--border-hover);
+        box-shadow: 0 0 12px var(--primary-glow);
+      }
+
+      .history-section:hover,
+      .actions-section:hover,
+      .blocks-section:hover {
+        border-color: var(--border-hover);
+      }
+
+      .how-it-works-section {
+        margin-top: 3rem;
+        padding: 3rem 0;
+        border-top: 1px solid var(--border);
+      }
+
+      .mode-comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+
+      .mode-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .mode-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      .mode-card h3 {
+        color: var(--primary);
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .mode-badge {
+        background: var(--primary);
+        color: var(--bg-dark);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .mode-card p {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mode-card ul {
+        color: var(--text-secondary);
+        padding-left: 1.2rem;
+      }
+
+      .mode-card li {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+      }
+
+      .workflow-tip {
+        background: rgba(0, 255, 136, 0.1);
+        border-left: 4px solid var(--primary);
+        padding: 1rem 1.5rem;
+        border-radius: 0 8px 8px 0;
+        margin-top: 1.5rem;
+        font-style: italic;
+      }
+
+      @media (max-width: 768px) {
+        .mode-comparison {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .mode-card {
+          padding: 1.25rem;
+        }
+
+        .mode-card h3 {
+          font-size: 1.1rem;
+        }
+      }
+
+      .github-section {
+        text-align: center;
+        margin: 3rem 0;
+        padding: 1.5rem 1rem;
+        border: 1px solid rgba(157, 78, 221, 0.4);
+        border-radius: 12px;
+        backdrop-filter: blur(6px);
+        font-size: 0.95rem;
+      }
+
+      .github-section p {
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      .highlight-purple {
+        color: #b26bff;
+        font-weight: 600;
+      }
+
+      .github-link {
+        color: #b26bff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .github-link:hover {
+        color: #d4a8ff;
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="header">
-        <div class="logo-container">
-          <div class="logo-icon">
+      <div class="compact-header">
+        <div class="logo-section">
+          <div class="logo-icon-small">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"
+                fill="currentColor"
               />
-              <path d="M7.5 9h4v1h-4zm0-2h4v1h-4z" />
             </svg>
           </div>
-          <h1 class="logo">DorkCraft</h1>
+          <div>
+            <h1 class="logo-compact">DorkCraft</h1>
+            <div class="logo-tagline">Craft better dorks</div>
+          </div>
         </div>
-        <p class="subtitle">
-          Advanced Search Engine Dork Builder for OSINT Professionals
-        </p>
+
+        <div class="mode-toggle-compact">
+          <input
+            type="radio"
+            id="simple-mode"
+            name="mode"
+            value="simple"
+            checked
+          />
+          <label for="simple-mode" class="mode-label-compact">Simple</label>
+          <input type="radio" id="advanced-mode" name="mode" value="advanced" />
+          <label for="advanced-mode" class="mode-label-compact">Advanced</label>
+        </div>
       </div>
 
-      <div class="main-content">
-        <div class="controls-section">
-          <div class="engine-selector">
-            <label for="engine">Search Engine</label>
-            <div class="input-hint">
-              Choose your preferred search engine for the generated dork
+      <div class="main-layout">
+        <div class="left-column">
+          <div class="input-section">
+            <div class="section-header">
+              <h2 class="section-title">Query Parameters</h2>
             </div>
-            <select id="engine">
-              <option value="google">Google</option>
-              <option value="duckduckgo">DuckDuckGo</option>
-              <option value="bing">Bing</option>
-            </select>
+
+            <div class="input-row-full">
+              <label for="engine">Search Engine</label>
+              <select id="engine">
+                <option value="google">Google</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+                <option value="bing">Bing</option>
+              </select>
+            </div>
+
+            <div class="input-row-split">
+              <div class="input-field">
+                <label for="domain">Domain</label>
+                <input id="domain" placeholder="example.com" />
+              </div>
+              <div class="input-field">
+                <label for="intitle">Title</label>
+                <input id="intitle" placeholder="login" />
+              </div>
+            </div>
+
+            <div class="input-row-split">
+              <div class="input-field">
+                <label for="inurl">URL</label>
+                <input id="inurl" placeholder="admin" />
+              </div>
+              <div class="input-field">
+                <label for="filetype">Type</label>
+                <input id="filetype" placeholder="pdf" />
+              </div>
+            </div>
+
+            <div class="input-row-split">
+              <div class="input-field">
+                <label for="intext">Content</label>
+                <input id="intext" placeholder="password" />
+              </div>
+              <div class="input-field">
+                <label for="exact">Exact</label>
+                <input id="exact" placeholder="phrase" />
+              </div>
+            </div>
+
+            <div class="operator-row advanced-only" id="input-operator-row">
+              <div
+                class="operator-instruction"
+                id="operator-instruction"
+                style="
+                  display: none;
+                  font-size: 0.8rem;
+                  color: var(--text-secondary);
+                  margin-bottom: 0.5rem;
+                "
+              >
+                Select operator for combined fields:
+              </div>
+              <button
+                class="btn-compact btn-primary-compact"
+                onclick="createBlockFromActiveInput()"
+                id="create-block-btn"
+              >
+                Create Block
+              </button>
+              <div class="operator-divider">|</div>
+              <button
+                class="btn-compact btn-operator-compact btn-and"
+                onclick="selectInputOperator('AND')"
+                id="btn-and"
+                disabled
+              >
+                AND
+              </button>
+              <button
+                class="btn-compact btn-operator-compact btn-or"
+                onclick="selectInputOperator('OR')"
+                id="btn-or"
+                disabled
+              >
+                OR
+              </button>
+              <button
+                class="btn-compact btn-operator-compact btn-not"
+                onclick="selectInputOperator('NOT')"
+                id="btn-not"
+                disabled
+              >
+                NOT
+              </button>
+            </div>
           </div>
 
-          <div class="input-grid">
-            <div class="input-card">
-              <label for="domain">Domain Targeting</label>
-              <div class="input-hint">
-                Use commas for multiple: "example.com, github.com"
-              </div>
-              <input id="domain" placeholder="example.com" />
+          <div class="history-section">
+            <div
+              class="section-header collapsible"
+              onclick="toggleQueryHistory()"
+            >
+              <h3 class="section-title-small">Query History</h3>
+              <span class="collapse-icon" id="query-history-collapse-icon"
+                >▼</span
+              >
             </div>
-
-            <div class="input-card">
-              <label for="intitle">Page Title Keywords</label>
-              <div class="input-hint">
-                Use commas for multiple: "login, admin, dashboard"
+            <div class="history-content" id="query-history-content">
+              <div class="query-history-list" id="query-history-list">
+                <div class="empty-history">
+                  <p>No queries yet. Generate a dork to see history.</p>
+                </div>
               </div>
-              <input id="intitle" placeholder="login" />
-            </div>
-
-            <div class="input-card">
-              <label for="inurl">URL Keywords</label>
-              <div class="input-hint">
-                Use commas for multiple: "config, backup, admin"
-              </div>
-              <input id="inurl" placeholder="admin" />
-            </div>
-
-            <div class="input-card">
-              <label for="filetype">File Extensions</label>
-              <div class="input-hint">
-                Use commas for multiple: "pdf, docx, xlsx, txt"
-              </div>
-              <input id="filetype" placeholder="pdf" />
-            </div>
-
-            <div class="input-card">
-              <label for="intext">Content Keywords</label>
-              <div class="input-hint">
-                Use commas for multiple: "password, confidential"
-              </div>
-              <input id="intext" placeholder="password" />
-            </div>
-
-            <div class="input-card">
-              <label for="exact">Exact Phrase</label>
-              <div class="input-hint">
-                Searches for the exact phrase in quotes
-              </div>
-              <input id="exact" placeholder="exact phrase to search" />
             </div>
           </div>
         </div>
 
-        <div class="output-section">
-          <div class="output-card">
-            <div class="output-header">
-              <span class="output-title">Generated Dork</span>
+        <div class="right-column">
+          <div class="actions-section">
+            <div class="action-buttons-compact">
+              <button
+                class="btn-compact btn-primary-compact simple-only"
+                onclick="generateQuery()"
+              >
+                Generate
+              </button>
+              <button
+                class="btn-compact btn-secondary-compact"
+                id="copy-btn"
+                onclick="copyQuery()"
+                disabled
+              >
+                Copy
+              </button>
+              <button
+                class="btn-compact btn-secondary-compact"
+                id="search-btn"
+                onclick="executeSearch()"
+                disabled
+              >
+                Execute
+              </button>
+              <button
+                class="btn-compact btn-accent-compact"
+                onclick="clearAll()"
+              >
+                Clear
+              </button>
+              <button
+                class="btn-compact btn-accent-compact advanced-only"
+                onclick="exportQuery()"
+              >
+                Export
+              </button>
+              <button
+                class="btn-compact btn-accent-compact advanced-only"
+                onclick="importQuery()"
+              >
+                Import
+              </button>
+              <button
+                class="btn-compact btn-accent-compact advanced-only"
+                onclick="undoLastAction()"
+                id="undo-btn"
+                disabled
+              >
+                Undo
+              </button>
+            </div>
+          </div>
+
+          <div class="output-section">
+            <div class="section-header">
+              <h3 class="section-title-small">Generated Query</h3>
+              <div
+                class="output-stats advanced-only"
+                id="query-stats"
+                style="display: none"
+              >
+                <span class="stat-badge">
+                  <strong id="total-blocks">0</strong> blocks
+                </span>
+                <span class="stat-badge">
+                  <strong id="total-operators">0</strong> ops
+                </span>
+              </div>
             </div>
             <div class="output-display" id="output">
               <div class="empty-state">
@@ -631,29 +1835,97 @@
             </div>
           </div>
 
-          <div class="button-grid">
-            <button class="btn btn-primary" onclick="generateDork()">
-              Generate Dork
-            </button>
-            <button
-              class="btn btn-secondary"
-              id="searchBtn"
-              onclick="executeSearch()"
-              disabled
-            >
-              Execute Search
-            </button>
-            <button class="btn btn-accent" onclick="copyDork()">
-              Copy to Clipboard
-            </button>
-            <button class="btn btn-accent" onclick="clearAll()">
-              Clear All Fields
-            </button>
+          <div class="blocks-section advanced-only">
+            <div class="section-header">
+              <h3 class="section-title-small">Available Blocks</h3>
+              <div class="workspace-actions">
+                <button
+                  class="btn-compact btn-xs"
+                  onclick="selectAllBlocks()"
+                  title="Select All"
+                >
+                  <svg viewBox="0 0 24 24" width="12" height="12">
+                    <path
+                      d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="btn-compact btn-xs"
+                  onclick="deselectAllBlocks()"
+                  title="Deselect All"
+                >
+                  <svg viewBox="0 0 24 24" width="12" height="12">
+                    <path
+                      d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="blocks-container" id="blocks-container">
+              <div class="empty-workspace">
+                <div class="empty-workspace-icon">
+                  <svg viewBox="0 0 64 64" width="36" height="36">
+                    <path
+                      d="M32 8L8 16V32L32 56L56 32V16L32 8ZM32 16L48 22V36L32 48L16 36V22L32 16Z"
+                      fill="currentColor"
+                      opacity="0.3"
+                    />
+                    <circle cx="32" cy="32" r="4" fill="currentColor" />
+                  </svg>
+                </div>
+                <p class="empty-workspace-text">No blocks yet</p>
+                <p class="empty-workspace-hint">
+                  Create blocks to start building
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="footer">
+        <div class="how-it-works-section">
+          <div class="about-section">
+            <h2 class="about-title">How It Works</h2>
+
+            <div class="about-content">
+              <div class="mode-comparison">
+                <div class="mode-card">
+                  <h3>Simple Mode <span class="mode-badge">Quick</span></h3>
+                  <p><strong>Fill fields → Generate Dork</strong></p>
+                  <ul>
+                    <li>Perfect for straightforward searches</li>
+                    <li>Multiple values = automatic OR combinations</li>
+                    <li>Instant results with one click</li>
+                  </ul>
+                </div>
+
+                <div class="mode-card">
+                  <h3>
+                    Advanced Mode <span class="mode-badge">Powerful</span>
+                  </h3>
+                  <p><strong>Build Blocks → Combine Logic → Export</strong></p>
+                  <ul>
+                    <li>Create blocks from search parameters</li>
+                    <li>Combine multiple fields with AND/OR/NOT</li>
+                    <li>Visual workspace with undo/redo</li>
+                    <li>Save and share complex queries</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="workflow-tip">
+                <strong>Pro Tip:</strong> Start simple, then switch to Advanced
+                when you need complex Boolean logic or want to save your work.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="about-section">
           <h2 class="about-title">About DorkCraft</h2>
 
@@ -688,13 +1960,147 @@
             Built with ❤️ for the OSINT and cybersecurity community
           </div>
         </div>
+
+        <section class="github-section">
+          <p>
+            💻 This project is
+            <span class="highlight-purple">open source</span> on
+            <a
+              href="https://github.com/SiddheshTambe45/dorkcraft"
+              target="_blank"
+              class="github-link"
+            >
+              GitHub </a
+            >. If you like it,
+            <span class="highlight-purple">⭐ star the repo</span>!
+          </p>
+        </section>
       </div>
     </div>
 
-    <script>
-      let currentSearchURL = "";
+    <div id="toast-container" class="toast-container"></div>
+    <input
+      type="file"
+      id="import-file"
+      accept=".json,.txt"
+      style="display: none"
+      onchange="handleImportFile(event)"
+    />
 
-      function generateDork() {
+    <script>
+      let currentMode = "simple";
+      let searchURL = "";
+      let blockIdCounter = 0;
+      let blocks = [];
+      let selectedBlocks = new Set();
+      let queryHistory = [];
+      let undoStack = [];
+      let historyCollapsed = false;
+      let selectedInputOperator = null; // Track operator for multi-field creation
+
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeEventListeners();
+        initializeMode();
+        updateUI();
+      });
+
+      function initializeEventListeners() {
+        document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+          radio.addEventListener("change", handleModeChange);
+        });
+
+        document.addEventListener("keydown", handleKeyboardShortcuts);
+
+        const fields = [
+          "domain",
+          "intitle",
+          "inurl",
+          "filetype",
+          "intext",
+          "exact",
+        ];
+        fields.forEach((fieldId) => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.addEventListener("input", handleInputChange);
+            field.addEventListener("keypress", function (e) {
+              if (e.key === "Enter") {
+                if (currentMode === "advanced") {
+                  createBlockFromActiveInput();
+                } else {
+                  generateQuery();
+                }
+              }
+            });
+          }
+        });
+      }
+
+      function handleInputChange() {
+        if (currentMode === "advanced") {
+          updateInputOperatorState();
+        }
+      }
+
+      function initializeMode() {
+        const simpleMode = document.getElementById("simple-mode");
+        const advancedMode = document.getElementById("advanced-mode");
+
+        if (advancedMode.checked) {
+          currentMode = "advanced";
+        } else {
+          currentMode = "simple";
+        }
+
+        updateModeDisplay();
+      }
+
+      function handleModeChange(event) {
+        const newMode = event.target.value;
+        if (newMode !== currentMode) {
+          currentMode = newMode;
+          updateModeDisplay();
+
+          if (newMode === "simple") {
+            showToast("Switched to Simple Mode", "info");
+          } else {
+            showToast("Switched to Advanced Mode", "info");
+            updateInputOperatorState();
+          }
+        }
+      }
+
+      function updateModeDisplay() {
+        const body = document.body;
+
+        if (currentMode === "advanced") {
+          body.classList.add("advanced-mode");
+        } else {
+          body.classList.remove("advanced-mode");
+          selectedInputOperator = null; // Reset operator when switching to simple mode
+        }
+
+        updateUI();
+      }
+
+      function generateQuery() {
+        let query = "";
+
+        if (currentMode === "simple" || blocks.length === 0) {
+          query = generateFromInputs();
+        } else {
+          query = buildFromBlocks();
+        }
+
+        if (query) {
+          displayQuery(query);
+          addToQueryHistory(query);
+        }
+
+        return query;
+      }
+
+      function generateFromInputs() {
         const inputs = {
           engine: document.getElementById("engine").value,
           domain: document.getElementById("domain").value.trim(),
@@ -705,17 +2111,15 @@
           exact: document.getElementById("exact").value.trim(),
         };
 
-        // Check if at least one field is filled
         const hasInput = Object.entries(inputs).some(
           ([key, value]) => key !== "engine" && value
         );
 
         if (!hasInput) {
           showToast("Please fill in at least one search field", "error");
-          return;
+          return "";
         }
 
-        // Build the dork query
         const dorkParts = [];
 
         if (inputs.domain) {
@@ -726,7 +2130,9 @@
           if (domains.length === 1) {
             dorkParts.push(`site:${domains[0]}`);
           } else if (domains.length > 1) {
-            dorkParts.push(domains.map((d) => `site:${d}`).join(" OR "));
+            dorkParts.push(
+              "(" + domains.map((d) => `site:${d}`).join(" OR ") + ")"
+            );
           }
         }
 
@@ -738,7 +2144,9 @@
           if (titles.length === 1) {
             dorkParts.push(`intitle:"${titles[0]}"`);
           } else if (titles.length > 1) {
-            dorkParts.push(titles.map((t) => `intitle:"${t}"`).join(" OR "));
+            dorkParts.push(
+              "(" + titles.map((t) => `intitle:"${t}"`).join(" OR ") + ")"
+            );
           }
         }
 
@@ -750,7 +2158,9 @@
           if (urls.length === 1) {
             dorkParts.push(`inurl:${urls[0]}`);
           } else if (urls.length > 1) {
-            dorkParts.push(urls.map((u) => `inurl:${u}`).join(" OR "));
+            dorkParts.push(
+              "(" + urls.map((u) => `inurl:${u}`).join(" OR ") + ")"
+            );
           }
         }
 
@@ -762,7 +2172,9 @@
           if (types.length === 1) {
             dorkParts.push(`filetype:${types[0]}`);
           } else if (types.length > 1) {
-            dorkParts.push(types.map((f) => `filetype:${f}`).join(" OR "));
+            dorkParts.push(
+              "(" + types.map((f) => `filetype:${f}`).join(" OR ") + ")"
+            );
           }
         }
 
@@ -774,7 +2186,9 @@
           if (texts.length === 1) {
             dorkParts.push(`intext:"${texts[0]}"`);
           } else if (texts.length > 1) {
-            dorkParts.push(texts.map((t) => `intext:"${t}"`).join(" OR "));
+            dorkParts.push(
+              "(" + texts.map((t) => `intext:"${t}"`).join(" OR ") + ")"
+            );
           }
         }
 
@@ -782,54 +2196,211 @@
           dorkParts.push(`"${inputs.exact}"`);
         }
 
-        const query = dorkParts.join(" ");
+        return dorkParts.join(" ");
+      }
 
-        // Build search URL
+      function buildFromBlocks() {
+        if (blocks.length === 0) return "";
+
+        if (blocks.length === 1) {
+          return blocks[0].query;
+        }
+
+        return blocks.map((b) => b.query).join(" ");
+      }
+
+      function displayQuery(query) {
+        const outputElement = document.getElementById("output");
+        const engine = document.getElementById("engine").value;
+
         const baseUrls = {
           google: "https://www.google.com/search?q=",
           duckduckgo: "https://duckduckgo.com/?q=",
           bing: "https://www.bing.com/search?q=",
         };
 
-        const outputElement = document.getElementById("output");
-        const searchBtn = document.getElementById("searchBtn");
-
         if (query.trim()) {
           outputElement.textContent = query;
           outputElement.style.textAlign = "left";
           outputElement.style.alignItems = "flex-start";
-          currentSearchURL =
-            baseUrls[inputs.engine] + encodeURIComponent(query);
-          searchBtn.disabled = false;
+
+          searchURL = baseUrls[engine] + encodeURIComponent(query);
+
+          const searchBtn = document.getElementById("search-btn");
+          const copyBtn = document.getElementById("copy-btn");
+
+          if (searchBtn) searchBtn.disabled = false;
+          if (copyBtn) copyBtn.disabled = false;
+
+          if (currentMode === "advanced") {
+            updateQueryStats(query);
+          }
+
           showToast("Dork generated successfully!", "success");
         } else {
           outputElement.innerHTML =
-            '<div class="empty-state">Please enter at least one search parameter</div>';
+            '<div class="empty-state">Your generated dork will appear here...</div>';
           outputElement.style.textAlign = "center";
           outputElement.style.alignItems = "center";
-          searchBtn.disabled = true;
-          showToast("No valid search parameters provided", "error");
+
+          const searchBtn = document.getElementById("search-btn");
+          const copyBtn = document.getElementById("copy-btn");
+
+          if (searchBtn) searchBtn.disabled = true;
+          if (copyBtn) copyBtn.disabled = true;
+        }
+      }
+
+      function addToQueryHistory(query) {
+        const historyItem = {
+          id: Date.now(),
+          query: query,
+          timestamp: Date.now(),
+          engine: document.getElementById("engine").value,
+        };
+
+        queryHistory.unshift(historyItem);
+
+        if (queryHistory.length > 20) {
+          queryHistory.pop();
+        }
+
+        renderQueryHistory();
+      }
+
+      function renderQueryHistory() {
+        const container = document.getElementById("query-history-list");
+
+        if (!container) return;
+
+        if (queryHistory.length === 0) {
+          container.innerHTML =
+            '<div class="empty-history"><p>No queries yet. Generate a dork to see history.</p></div>';
+          return;
+        }
+
+        const historyHTML = queryHistory
+          .slice(0, 10)
+          .map(
+            (item) => `
+    <div class="history-query-item" onclick="loadQueryFromHistory(${item.id})">
+      <div class="history-query-text">${item.query}</div>
+      <div class="history-query-meta">
+        <span class="history-query-time">${formatTimestamp(
+          item.timestamp
+        )}</span>
+        <div class="history-query-actions">
+          <button class="history-action-btn" onclick="copyQueryFromHistory(${
+            item.id
+          }, event)" title="Copy">
+            <svg viewBox="0 0 24 24" width="12" height="12">
+              <path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="history-action-btn" onclick="deleteQueryFromHistory(${
+            item.id
+          }, event)" title="Delete">
+            <svg viewBox="0 0 24 24" width="12" height="12">
+              <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `
+          )
+          .join("");
+
+        container.innerHTML = historyHTML;
+      }
+
+      function loadQueryFromHistory(historyId) {
+        const item = queryHistory.find((h) => h.id === historyId);
+        if (item) {
+          const outputElement = document.getElementById("output");
+          outputElement.textContent = item.query;
+          outputElement.style.textAlign = "left";
+          outputElement.style.alignItems = "flex-start";
+
+          const engine = document.getElementById("engine").value;
+          const baseUrls = {
+            google: "https://www.google.com/search?q=",
+            duckduckgo: "https://duckduckgo.com/?q=",
+            bing: "https://www.bing.com/search?q=",
+          };
+
+          searchURL = baseUrls[engine] + encodeURIComponent(item.query);
+
+          const searchBtn = document.getElementById("search-btn");
+          const copyBtn = document.getElementById("copy-btn");
+
+          if (searchBtn) searchBtn.disabled = false;
+          if (copyBtn) copyBtn.disabled = false;
+
+          showToast("Query loaded from history", "info");
+        }
+      }
+
+      function copyQueryFromHistory(historyId, event) {
+        if (event) event.stopPropagation();
+
+        const item = queryHistory.find((h) => h.id === historyId);
+        if (item) {
+          navigator.clipboard
+            .writeText(item.query)
+            .then(() => {
+              showToast("Query copied from history!", "success");
+            })
+            .catch(() => {
+              showToast("Failed to copy", "error");
+            });
+        }
+      }
+
+      function deleteQueryFromHistory(historyId, event) {
+        if (event) event.stopPropagation();
+
+        queryHistory = queryHistory.filter((h) => h.id !== historyId);
+        renderQueryHistory();
+        showToast("Query removed from history", "info");
+      }
+
+      function toggleQueryHistory() {
+        const content = document.getElementById("query-history-content");
+        const icon = document.getElementById("query-history-collapse-icon");
+
+        historyCollapsed = !historyCollapsed;
+
+        if (historyCollapsed) {
+          content.classList.add("collapsed");
+          icon.classList.add("collapsed");
+          icon.textContent = "▶";
+        } else {
+          content.classList.remove("collapsed");
+          icon.classList.remove("collapsed");
+          icon.textContent = "▼";
         }
       }
 
       function executeSearch() {
-        if (currentSearchURL) {
-          window.open(currentSearchURL, "_blank");
+        if (searchURL) {
+          window.open(searchURL, "_blank");
           showToast("Opening search in new tab...", "success");
         } else {
-          showToast("Please generate a dork first", "error");
+          const query = generateQuery();
+          if (query) {
+            executeSearch();
+          } else {
+            showToast("Please create a dork first", "error");
+          }
         }
       }
 
-      function copyDork() {
+      function copyQuery() {
         const output = document.getElementById("output");
         const text = output.textContent;
 
-        if (
-          text &&
-          !text.includes("Your generated dork") &&
-          !text.includes("Please enter")
-        ) {
+        if (text && !text.includes("Your generated dork")) {
           navigator.clipboard
             .writeText(text)
             .then(() => {
@@ -844,57 +2415,993 @@
       }
 
       function clearAll() {
-        document
-          .querySelectorAll("input")
-          .forEach((input) => (input.value = ""));
+        document.querySelectorAll('input[type="text"]').forEach((input) => {
+          if (input.id !== "import-file") {
+            input.value = "";
+          }
+        });
+
         document.getElementById("engine").value = "google";
+
         const outputElement = document.getElementById("output");
         outputElement.innerHTML =
           '<div class="empty-state">Your generated dork will appear here...</div>';
         outputElement.style.textAlign = "center";
         outputElement.style.alignItems = "center";
-        document.getElementById("searchBtn").disabled = true;
-        currentSearchURL = "";
+
+        if (currentMode === "advanced") {
+          blocks = [];
+          selectedBlocks.clear();
+          selectedInputOperator = null;
+          renderBlocks();
+          updateOperatorButtons();
+          updateInputOperatorState();
+          updateQueryStats("");
+          hideQueryStats();
+        }
+
+        const searchBtn = document.getElementById("search-btn");
+        const copyBtn = document.getElementById("copy-btn");
+
+        if (searchBtn) searchBtn.disabled = true;
+        if (copyBtn) copyBtn.disabled = true;
+
+        searchURL = "";
+
         showToast("All fields cleared", "success");
       }
 
+      function updateInputOperatorState() {
+        const filledFields = getFilledFields();
+        const filledCount = filledFields.length;
+        const createBlockBtn = document.getElementById("create-block-btn");
+        const instructionEl = document.getElementById("operator-instruction");
+        const andBtn = document.getElementById("btn-and");
+        const orBtn = document.getElementById("btn-or");
+        const notBtn = document.getElementById("btn-not");
+
+        // Reset operator buttons visual state
+        if (andBtn) andBtn.classList.remove("selected");
+        if (orBtn) orBtn.classList.remove("selected");
+        if (notBtn) notBtn.classList.remove("selected");
+
+        if (filledCount === 0) {
+          // No fields filled
+          if (createBlockBtn) createBlockBtn.disabled = true;
+          if (instructionEl) instructionEl.style.display = "none";
+          selectedInputOperator = null;
+        } else if (filledCount === 1) {
+          // Single field filled - direct creation
+          if (createBlockBtn) {
+            createBlockBtn.disabled = false;
+            createBlockBtn.textContent = "Create Block";
+          }
+          if (instructionEl) instructionEl.style.display = "none";
+          selectedInputOperator = null;
+        } else {
+          // Multiple fields filled - require operator selection
+          if (createBlockBtn) {
+            createBlockBtn.disabled = true;
+            createBlockBtn.textContent = "Create Combined Block";
+          }
+          if (instructionEl) instructionEl.style.display = "block";
+
+          // Enable operator buttons for input combination
+          if (andBtn) andBtn.disabled = false;
+          if (orBtn) orBtn.disabled = false;
+          if (notBtn) notBtn.disabled = false;
+        }
+
+        // Update block operator buttons based on selected blocks
+        updateOperatorButtons();
+      }
+
+      function getFilledFields() {
+        const fields = [
+          "domain",
+          "intitle",
+          "inurl",
+          "filetype",
+          "intext",
+          "exact",
+        ];
+        return fields.filter((fieldId) => {
+          const field = document.getElementById(fieldId);
+          return field && field.value.trim();
+        });
+      }
+
+      function selectInputOperator(operator) {
+        selectedInputOperator = operator;
+        const createBlockBtn = document.getElementById("create-block-btn");
+        const andBtn = document.getElementById("btn-and");
+        const orBtn = document.getElementById("btn-or");
+        const notBtn = document.getElementById("btn-not");
+
+        // Update button visual states
+        if (andBtn) andBtn.classList.toggle("selected", operator === "AND");
+        if (orBtn) orBtn.classList.toggle("selected", operator === "OR");
+        if (notBtn) notBtn.classList.toggle("selected", operator === "NOT");
+
+        // Enable create block button
+        if (createBlockBtn) {
+          createBlockBtn.disabled = false;
+        }
+
+        showToast(`Selected ${operator} operator for combined fields`, "info");
+      }
+
+      function createBlockFromActiveInput() {
+        const filledFields = getFilledFields();
+        const filledCount = filledFields.length;
+
+        if (filledCount === 0) {
+          showToast("Please fill in at least one field", "error");
+          return;
+        }
+
+        saveStateForUndo();
+
+        if (filledCount === 1) {
+          // Single field - create individual block
+          const fieldId = filledFields[0];
+          const typeMap = {
+            domain: "site",
+            intitle: "intitle",
+            inurl: "inurl",
+            filetype: "filetype",
+            intext: "intext",
+            exact: "exact",
+          };
+          createBlock(typeMap[fieldId]);
+        } else {
+          // Multiple fields - create combined block
+          if (!selectedInputOperator) {
+            showToast("Please select an operator (AND/OR/NOT) first", "error");
+            return;
+          }
+          createCombinedBlockFromInputs();
+        }
+      }
+
+      function createCombinedBlockFromInputs() {
+        const filledFields = getFilledFields();
+        const typeMap = {
+          domain: "site",
+          intitle: "intitle",
+          inurl: "inurl",
+          filetype: "filetype",
+          intext: "intext",
+          exact: "exact",
+        };
+
+        const fieldParts = [];
+
+        filledFields.forEach((fieldId) => {
+          const input = document.getElementById(fieldId);
+          const value = input.value.trim();
+          const type = typeMap[fieldId];
+
+          if (value) {
+            const values = value
+              .split(",")
+              .map((v) => v.trim())
+              .filter((v) => v);
+            if (values.length === 1) {
+              fieldParts.push(formatSingleFieldQuery(type, values[0]));
+            } else {
+              fieldParts.push(
+                "(" +
+                  values
+                    .map((v) => formatSingleFieldQuery(type, v))
+                    .join(" OR ") +
+                  ")"
+              );
+            }
+          }
+        });
+
+        let combinedQuery;
+        if (selectedInputOperator === "NOT") {
+          // For NOT, apply negation to each field part
+          combinedQuery = fieldParts
+            .map((part) => `-${part.replace(/^-/, "")}`)
+            .join(" ");
+        } else {
+          combinedQuery =
+            "(" + fieldParts.join(` ${selectedInputOperator} `) + ")";
+        }
+
+        const block = {
+          id: ++blockIdCounter,
+          type: "combined",
+          value: combinedQuery,
+          query: combinedQuery,
+          timestamp: Date.now(),
+          operator: selectedInputOperator,
+          combinedFrom: filledFields,
+          isNegated: selectedInputOperator === "NOT",
+        };
+
+        blocks.push(block);
+
+        // Clear all input fields
+        filledFields.forEach((fieldId) => {
+          const input = document.getElementById(fieldId);
+          if (input) input.value = "";
+        });
+
+        // Reset operator state
+        selectedInputOperator = null;
+        updateInputOperatorState();
+
+        renderBlocks();
+        generateQuery();
+        updateOperatorButtons();
+
+        showToast(
+          `Combined block created with ${selectedInputOperator}`,
+          "success"
+        );
+      }
+
+      function formatSingleFieldQuery(type, value) {
+        switch (type) {
+          case "site":
+            return `site:${value}`;
+          case "intitle":
+            return `intitle:"${value}"`;
+          case "inurl":
+            return `inurl:${value}`;
+          case "filetype":
+            return `filetype:${value}`;
+          case "intext":
+            return `intext:"${value}"`;
+          case "exact":
+            return `"${value}"`;
+          default:
+            return value;
+        }
+      }
+
+      function createBlock(type) {
+        const inputMap = {
+          site: "domain",
+          intitle: "intitle",
+          inurl: "inurl",
+          filetype: "filetype",
+          intext: "intext",
+          exact: "exact",
+        };
+
+        const inputId = inputMap[type];
+        const input = document.getElementById(inputId);
+        const value = input.value.trim();
+
+        if (!value) {
+          showToast("Please enter a value before creating a block", "error");
+          input.focus();
+          return;
+        }
+
+        saveStateForUndo();
+
+        const block = {
+          id: ++blockIdCounter,
+          type: type,
+          value: value,
+          query: formatBlockQuery(type, value),
+          timestamp: Date.now(),
+          isNegated: false,
+        };
+
+        blocks.push(block);
+        input.value = "";
+
+        // Update operator state after clearing field
+        updateInputOperatorState();
+
+        renderBlocks();
+        generateQuery();
+        updateOperatorButtons();
+
+        showToast(`Block created: ${block.query}`, "success");
+      }
+
+      function formatBlockQuery(type, value) {
+        const values = value
+          .split(",")
+          .map((v) => v.trim())
+          .filter((v) => v);
+
+        if (values.length === 0) return "";
+
+        if (values.length === 1) {
+          switch (type) {
+            case "site":
+              return `site:${values[0]}`;
+            case "intitle":
+              return `intitle:"${values[0]}"`;
+            case "inurl":
+              return `inurl:${values[0]}`;
+            case "filetype":
+              return `filetype:${values[0]}`;
+            case "intext":
+              return `intext:"${values[0]}"`;
+            case "exact":
+              return `"${values[0]}"`;
+            default:
+              return values[0];
+          }
+        } else {
+          let parts = [];
+          switch (type) {
+            case "site":
+              parts = values.map((v) => `site:${v}`);
+              break;
+            case "intitle":
+              parts = values.map((v) => `intitle:"${v}"`);
+              break;
+            case "inurl":
+              parts = values.map((v) => `inurl:${v}`);
+              break;
+            case "filetype":
+              parts = values.map((v) => `filetype:${v}`);
+              break;
+            case "intext":
+              parts = values.map((v) => `intext:"${v}"`);
+              break;
+            case "exact":
+              parts = values.map((v) => `"${v}"`);
+              break;
+          }
+          return "(" + parts.join(" OR ") + ")";
+        }
+      }
+
+      function renderBlocks() {
+        const container = document.getElementById("blocks-container");
+
+        if (blocks.length === 0) {
+          container.innerHTML = `
+      <div class="empty-workspace">
+        <div class="empty-workspace-icon">
+          <svg viewBox="0 0 64 64" width="36" height="36">
+            <path
+              d="M32 8L8 16V32L32 56L56 32V16L32 8ZM32 16L48 22V36L32 48L16 36V22L32 16Z"
+              fill="currentColor"
+              opacity="0.3"
+            />
+            <circle cx="32" cy="32" r="4" fill="currentColor" />
+          </svg>
+        </div>
+        <p class="empty-workspace-text">No blocks yet</p>
+        <p class="empty-workspace-hint">
+          Create blocks to start building
+        </p>
+      </div>
+    `;
+          return;
+        }
+
+        const blocksHTML = blocks
+          .map(
+            (block) => `
+    <div class="query-block ${selectedBlocks.has(block.id) ? "selected" : ""} ${
+              block.isNegated ? "negated" : ""
+            }" 
+         data-block-id="${block.id}" 
+         onclick="toggleBlockSelection(${block.id})">
+      <div class="block-header">
+        <span class="block-type">${block.type.toUpperCase()}</span>
+        <div class="block-actions">
+          ${
+            block.isNegated
+              ? '<span class="not-badge" title="NOT applied">¬</span>'
+              : ""
+          }
+          <button class="block-action-btn" onclick="toggleBlockNot(${
+            block.id
+          }, event)" title="Toggle NOT">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="block-action-btn" onclick="deleteBlock(${
+            block.id
+          }, event)" title="Delete block">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="block-content">
+        <code class="block-query">${block.query}</code>
+      </div>
+      <div class="block-footer">
+        <span class="block-timestamp">${formatTimestamp(block.timestamp)}</span>
+      </div>
+    </div>
+  `
+          )
+          .join("");
+
+        container.innerHTML = blocksHTML;
+      }
+
+      function toggleBlockSelection(blockId) {
+        if (selectedBlocks.has(blockId)) {
+          selectedBlocks.delete(blockId);
+        } else {
+          selectedBlocks.add(blockId);
+        }
+
+        renderBlocks();
+        updateOperatorButtons();
+      }
+
+      function deleteBlock(blockId, event) {
+        if (event) event.stopPropagation();
+
+        saveStateForUndo();
+
+        const blockIndex = blocks.findIndex((b) => b.id === blockId);
+        if (blockIndex !== -1) {
+          const block = blocks[blockIndex];
+          blocks.splice(blockIndex, 1);
+          selectedBlocks.delete(blockId);
+
+          renderBlocks();
+          generateQuery();
+          updateOperatorButtons();
+
+          showToast("Block deleted", "info");
+        }
+      }
+
+      function toggleBlockNot(blockId, event) {
+        if (event) event.stopPropagation();
+
+        saveStateForUndo();
+
+        const block = blocks.find((b) => b.id === blockId);
+        if (block) {
+          block.isNegated = !block.isNegated;
+
+          if (block.isNegated) {
+            block.query = `-${block.query.replace(/^-/, "")}`;
+          } else {
+            block.query = block.query.replace(/^-/, "");
+          }
+
+          renderBlocks();
+          generateQuery();
+          showToast(`NOT ${block.isNegated ? "applied" : "removed"}`, "info");
+        }
+      }
+
+      function selectAllBlocks() {
+        blocks.forEach((block) => selectedBlocks.add(block.id));
+        renderBlocks();
+        updateOperatorButtons();
+        showToast(`Selected ${blocks.length} blocks`, "info");
+      }
+
+      function deselectAllBlocks() {
+        selectedBlocks.clear();
+        renderBlocks();
+        updateOperatorButtons();
+        showToast("All blocks deselected", "info");
+      }
+
+      function updateOperatorButtons() {
+        const andBtn = document.getElementById("btn-and");
+        const orBtn = document.getElementById("btn-or");
+        const notBtn = document.getElementById("btn-not");
+        const filledCount = getFilledFields().length;
+        const selectedCount = selectedBlocks.size;
+
+        if (!andBtn || !orBtn || !notBtn) return;
+
+        // Determine if we're in input combination mode or block combination mode
+        const isInputCombinationMode = filledCount >= 2 && selectedCount === 0;
+        const isBlockCombinationMode = selectedCount >= 2;
+
+        if (isInputCombinationMode) {
+          // Input combination mode - operators are for combining input fields
+          andBtn.onclick = () => selectInputOperator("AND");
+          orBtn.onclick = () => selectInputOperator("OR");
+          notBtn.onclick = () => selectInputOperator("NOT");
+
+          andBtn.disabled = false;
+          orBtn.disabled = false;
+          notBtn.disabled = false;
+        } else if (isBlockCombinationMode) {
+          // Block combination mode - operators are for combining selected blocks
+          andBtn.onclick = () => combineBlocks("AND");
+          orBtn.onclick = () => combineBlocks("OR");
+          notBtn.onclick = () => applyNotToSelected();
+
+          andBtn.disabled = false;
+          orBtn.disabled = false;
+          notBtn.disabled = false;
+        } else if (selectedCount === 1) {
+          // Single block selected - only NOT is available
+          andBtn.onclick = () => combineBlocks("AND");
+          orBtn.onclick = () => combineBlocks("OR");
+          notBtn.onclick = () => applyNotToSelected();
+
+          andBtn.disabled = true;
+          orBtn.disabled = true;
+          notBtn.disabled = false;
+        } else {
+          // No blocks selected and not enough fields for input combination
+          andBtn.onclick = () => combineBlocks("AND");
+          orBtn.onclick = () => combineBlocks("OR");
+          notBtn.onclick = () => applyNotToSelected();
+
+          andBtn.disabled = true;
+          orBtn.disabled = true;
+          notBtn.disabled = true;
+        }
+      }
+
+      function combineBlocks(operator) {
+        const selectedBlockIds = Array.from(selectedBlocks);
+
+        if (selectedBlockIds.length < 2) {
+          showToast("Select at least 2 blocks to combine", "error");
+          return;
+        }
+
+        saveStateForUndo();
+
+        const selectedBlockObjects = blocks.filter((b) =>
+          selectedBlockIds.includes(b.id)
+        );
+
+        const queries = selectedBlockObjects.map((b) => b.query);
+        const combinedQuery = `(${queries.join(` ${operator} `)})`;
+
+        const newBlock = {
+          id: ++blockIdCounter,
+          type: "combined",
+          value: combinedQuery,
+          query: combinedQuery,
+          timestamp: Date.now(),
+          operator: operator,
+          combinedFrom: selectedBlockIds,
+          isNegated: false,
+        };
+
+        blocks = blocks.filter((b) => !selectedBlockIds.includes(b.id));
+        blocks.push(newBlock);
+        selectedBlocks.clear();
+
+        renderBlocks();
+        generateQuery();
+        updateOperatorButtons();
+
+        showToast(`Blocks combined with ${operator}`, "success");
+      }
+
+      function applyNotToSelected() {
+        const selectedBlockIds = Array.from(selectedBlocks);
+
+        if (selectedBlockIds.length === 0) {
+          showToast("Select at least one block to apply NOT", "error");
+          return;
+        }
+
+        saveStateForUndo();
+
+        selectedBlockIds.forEach((blockId) => {
+          const block = blocks.find((b) => b.id === blockId);
+          if (block) {
+            block.isNegated = !block.isNegated;
+            if (block.isNegated) {
+              block.query = `-${block.query.replace(/^-/, "")}`;
+            } else {
+              block.query = block.query.replace(/^-/, "");
+            }
+          }
+        });
+
+        renderBlocks();
+        generateQuery();
+        showToast(
+          `NOT toggled on ${selectedBlockIds.length} block(s)`,
+          "success"
+        );
+      }
+
+      function updateQueryStats(query) {
+        const statsContainer = document.getElementById("query-stats");
+        const totalBlocksEl = document.getElementById("total-blocks");
+        const totalOperatorsEl = document.getElementById("total-operators");
+
+        if (!statsContainer) return;
+
+        if (!query || query.trim() === "") {
+          hideQueryStats();
+          return;
+        }
+
+        statsContainer.style.display = "flex";
+
+        totalBlocksEl.textContent = blocks.length;
+
+        const operatorCount = (query.match(/\b(AND|OR)\b/g) || []).length;
+        const notCount = (query.match(/-\w+:/g) || []).length;
+        totalOperatorsEl.textContent = operatorCount + notCount;
+      }
+
+      function hideQueryStats() {
+        const statsContainer = document.getElementById("query-stats");
+        if (statsContainer) {
+          statsContainer.style.display = "none";
+        }
+      }
+
+      function saveStateForUndo() {
+        const state = {
+          blocks: JSON.parse(JSON.stringify(blocks)),
+          selectedBlocks: new Set(selectedBlocks),
+          blockIdCounter: blockIdCounter,
+          timestamp: Date.now(),
+        };
+
+        undoStack.push(state);
+
+        if (undoStack.length > 20) {
+          undoStack.shift();
+        }
+
+        const undoBtn = document.getElementById("undo-btn");
+        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+      }
+
+      function undoLastAction() {
+        if (undoStack.length === 0) {
+          showToast("Nothing to undo", "info");
+          return;
+        }
+
+        const previousState = undoStack.pop();
+
+        blocks = previousState.blocks;
+        selectedBlocks = previousState.selectedBlocks;
+        blockIdCounter = previousState.blockIdCounter;
+
+        renderBlocks();
+        generateQuery();
+        updateOperatorButtons();
+
+        const undoBtn = document.getElementById("undo-btn");
+        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+
+        showToast("Action undone", "info");
+      }
+
+      function exportQuery() {
+        const exportData = {
+          version: "2.0",
+          timestamp: new Date().toISOString(),
+          mode: currentMode,
+          blocks: blocks,
+          queryHistory: queryHistory,
+          inputs: {
+            domain: document.getElementById("domain").value,
+            intitle: document.getElementById("intitle").value,
+            inurl: document.getElementById("inurl").value,
+            filetype: document.getElementById("filetype").value,
+            intext: document.getElementById("intext").value,
+            exact: document.getElementById("exact").value,
+            engine: document.getElementById("engine").value,
+          },
+          finalQuery: generateQuery(),
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `dorkcraft-query-${
+          new Date().toISOString().split("T")[0]
+        }.json`;
+        link.click();
+
+        showToast("Query exported successfully", "success");
+      }
+
+      function importQuery() {
+        const fileInput = document.getElementById("import-file");
+        fileInput.click();
+      }
+
+      function handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const importData = JSON.parse(e.target.result);
+
+            if (!importData.version || !importData.inputs) {
+              throw new Error("Invalid file format");
+            }
+
+            saveStateForUndo();
+
+            if (importData.inputs) {
+              document.getElementById("domain").value =
+                importData.inputs.domain || "";
+              document.getElementById("intitle").value =
+                importData.inputs.intitle || "";
+              document.getElementById("inurl").value =
+                importData.inputs.inurl || "";
+              document.getElementById("filetype").value =
+                importData.inputs.filetype || "";
+              document.getElementById("intext").value =
+                importData.inputs.intext || "";
+              document.getElementById("exact").value =
+                importData.inputs.exact || "";
+              document.getElementById("engine").value =
+                importData.inputs.engine || "google";
+            }
+
+            if (importData.blocks && importData.blocks.length > 0) {
+              blocks = importData.blocks;
+              queryHistory = importData.queryHistory || [];
+
+              blockIdCounter = Math.max(0, ...blocks.map((b) => b.id));
+
+              if (currentMode === "simple") {
+                document.getElementById("advanced-mode").checked = true;
+                handleModeChange({ target: { value: "advanced" } });
+              }
+
+              renderBlocks();
+            }
+
+            if (importData.queryHistory) {
+              queryHistory = importData.queryHistory;
+              renderQueryHistory();
+            }
+
+            generateQuery();
+            updateOperatorButtons();
+
+            showToast("Query imported successfully", "success");
+          } catch (error) {
+            showToast("Failed to import query: " + error.message, "error");
+          }
+        };
+
+        reader.readAsText(file);
+        event.target.value = "";
+      }
+
+      function handleKeyboardShortcuts(e) {
+        if (e.ctrlKey || e.metaKey) {
+          switch (e.key.toLowerCase()) {
+            case "enter":
+              e.preventDefault();
+              const focusedInput = document.activeElement;
+              if (
+                focusedInput.tagName === "INPUT" &&
+                focusedInput.type === "text"
+              ) {
+                if (currentMode === "advanced") {
+                  const fieldMap = {
+                    domain: "site",
+                    intitle: "intitle",
+                    inurl: "inurl",
+                    filetype: "filetype",
+                    intext: "intext",
+                    exact: "exact",
+                  };
+                  const type = fieldMap[focusedInput.id];
+                  if (type) createBlock(type);
+                } else {
+                  generateQuery();
+                }
+              } else {
+                generateQuery();
+              }
+              break;
+
+            case "c":
+              if (e.shiftKey) {
+                e.preventDefault();
+                copyQuery();
+              }
+              break;
+
+            case "z":
+              if (currentMode === "advanced" && !e.shiftKey) {
+                e.preventDefault();
+                undoLastAction();
+              }
+              break;
+
+            case "e":
+              if (e.shiftKey && currentMode === "advanced") {
+                e.preventDefault();
+                exportQuery();
+              }
+              break;
+
+            case "i":
+              if (e.shiftKey && currentMode === "advanced") {
+                e.preventDefault();
+                importQuery();
+              }
+              break;
+
+            case "k":
+              if (e.shiftKey) {
+                e.preventDefault();
+                showKeyboardShortcuts();
+              }
+              break;
+          }
+        }
+
+        if (
+          currentMode === "advanced" &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          const focusedElement = document.activeElement;
+
+          if (
+            focusedElement.tagName !== "INPUT" &&
+            focusedElement.tagName !== "SELECT"
+          ) {
+            switch (e.key.toLowerCase()) {
+              case "a":
+                e.preventDefault();
+                if (selectedBlocks.size >= 2) {
+                  combineBlocks("AND");
+                }
+                break;
+
+              case "o":
+                e.preventDefault();
+                if (selectedBlocks.size >= 2) {
+                  combineBlocks("OR");
+                }
+                break;
+
+              case "n":
+                e.preventDefault();
+                if (selectedBlocks.size >= 1) {
+                  applyNotToSelected();
+                }
+                break;
+
+              case "escape":
+                e.preventDefault();
+                deselectAllBlocks();
+                break;
+            }
+          }
+        }
+      }
+
+      function showKeyboardShortcuts() {
+        const shortcuts = `
+Keyboard Shortcuts:
+
+Global:
+  Ctrl+Enter    - Generate Query / Create Block
+  Ctrl+Shift+C  - Copy Dork
+  Ctrl+Shift+K  - Show This Help
+
+Simple Mode:
+  Ctrl+Enter    - Generate Dork
+
+Advanced Mode:
+  Ctrl+Enter    - Create Block (when input focused)
+  Ctrl+Z        - Undo Last Action
+  Ctrl+Shift+E  - Export Query
+  Ctrl+Shift+I  - Import Query
+  A             - Combine with AND (2+ blocks selected)
+  O             - Combine with OR (2+ blocks selected)
+  N             - Toggle NOT (1+ blocks selected)
+  ESC           - Deselect All Blocks
+  `;
+
+        alert(shortcuts);
+      }
+
+      function formatTimestamp(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (seconds < 60) return "just now";
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+
+        const date = new Date(timestamp);
+        return date.toLocaleDateString();
+      }
+
       function showToast(message, type = "success") {
-        // Remove existing toast
-        const existingToast = document.querySelector(".toast");
-        if (existingToast) {
-          existingToast.remove();
-        }
+        const container = document.getElementById("toast-container");
 
-        // Create new toast
         const toast = document.createElement("div");
-        toast.className = "toast";
-        toast.textContent = message;
+        toast.className = `toast toast-${type}`;
 
-        if (type === "error") {
-          toast.style.background = "#ff4444";
-          toast.style.color = "white";
-        }
+        const icons = {
+          success:
+            '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" fill="currentColor"/></svg>',
+          error:
+            '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" fill="currentColor"/></svg>',
+          info: '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" fill="currentColor"/></svg>',
+          warning:
+            '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" fill="currentColor"/></svg>',
+        };
 
-        document.body.appendChild(toast);
+        toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || icons.info}</div>
+    <div class="toast-message">${message}</div>
+    <button class="toast-close" onclick="this.parentElement.remove()">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" fill="currentColor"/>
+      </svg>
+    </button>
+  `;
 
-        // Show toast
-        setTimeout(() => toast.classList.add("show"), 100);
+        container.appendChild(toast);
 
-        // Hide and remove toast
+        setTimeout(() => toast.classList.add("show"), 10);
+
         setTimeout(() => {
           toast.classList.remove("show");
           setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 4000);
       }
 
-      // Add keyboard shortcuts
-      document.addEventListener("keydown", function (e) {
-        if (e.ctrlKey && e.key === "Enter") {
-          generateDork();
-        } else if (e.ctrlKey && e.key === "c" && e.shiftKey) {
-          copyDork();
+      function updateUI() {
+        if (currentMode === "advanced") {
+          renderBlocks();
+          updateOperatorButtons();
+          updateInputOperatorState();
+
+          const undoBtn = document.getElementById("undo-btn");
+          if (undoBtn) undoBtn.disabled = undoStack.length === 0;
         }
-      });
+
+        renderQueryHistory();
+
+        if (blocks.length > 0) {
+          generateQuery();
+        }
+      }
+
+      console.log("DorkCraft Advanced v2.0 - Final UI");
+      console.log("Press Ctrl+Shift+K for keyboard shortcuts");
+
+      setTimeout(() => {
+        const welcomeMessage =
+          currentMode === "advanced"
+            ? "Welcome to Advanced Mode! Build complex queries step by step."
+            : "Welcome to DorkCraft! Switch to Advanced Mode for complex queries.";
+
+        showToast(welcomeMessage, "info");
+      }, 500);
     </script>
   </body>
 </html>
