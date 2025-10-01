@@ -19,4 +19,4 @@ Instead of remembering operators like `site:` or `intitle:`, just fill in the fi
 ## Note
 
 This is a small, simple tool designed for quick OSINT queries. Use responsibly.
-Added Advanced page for more features
+Added Advanced page for more features.
