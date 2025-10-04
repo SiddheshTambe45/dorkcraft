@@ -1613,6 +1613,77 @@
         color: #d4a8ff;
         text-decoration: underline;
       }
+
+      .disclaimer-section {
+        margin: 3rem auto;
+        max-width: 800px;
+        padding: 2rem;
+        background: rgba(255, 0, 128, 0.05);
+        border: 2px solid rgba(255, 0, 128, 0.3);
+        border-radius: 12px;
+        backdrop-filter: blur(6px);
+      }
+
+      .disclaimer-title {
+        color: var(--accent);
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .disclaimer-content {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: var(--text-secondary);
+      }
+
+      .disclaimer-content p {
+        margin-bottom: 1rem;
+      }
+
+      .disclaimer-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .disclaimer-content ul {
+        margin: 1rem 0 1rem 1.5rem;
+        list-style-type: disc;
+      }
+
+      .disclaimer-content li {
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+      }
+
+      .disclaimer-footer-text {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 0, 128, 0.2);
+        text-align: center;
+        font-style: italic;
+        color: var(--accent);
+      }
+
+      @media (max-width: 768px) {
+        .disclaimer-section {
+          padding: 1.5rem;
+          margin: 2rem 1rem;
+        }
+
+        .disclaimer-title {
+          font-size: 1.2rem;
+        }
+
+        .disclaimer-content {
+          font-size: 0.9rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1962,10 +2033,51 @@
             <strong>One problem solved well.</strong>
           </div>
 
-          <div class="about-footer">
+          <!-- <div class="about-footer">
             Built with ❤️ for the OSINT and cybersecurity community
-          </div>
+          </div> -->
         </div>
+
+        <section class="disclaimer-section">
+          <h3 class="disclaimer-title">
+            ⚠️ Responsible Use & Legal Disclaimer
+          </h3>
+          <div class="disclaimer-content">
+            <p>
+              <strong>DorkCraft is an educational tool</strong> designed to help
+              security researchers, penetration testers, and IT professionals
+              construct search queries for legitimate research and authorized
+              security assessments.
+            </p>
+            <p>
+              <strong>Users are solely responsible for their actions.</strong>
+              The developers of DorkCraft assume no liability for misuse,
+              unauthorized access, data breaches, or any illegal activities
+              conducted using this tool. Always ensure you have proper
+              authorization before conducting any security research.
+            </p>
+            <p>By using DorkCraft, you agree to:</p>
+            <ul>
+              <li>
+                Comply with all applicable local, national, and international
+                laws
+              </li>
+              <li>
+                Respect website terms of service and robots.txt directives
+              </li>
+              <li>Obtain proper authorization before testing any systems</li>
+              <li>
+                Use the tool ethically and responsibly for legitimate purposes
+                only
+              </li>
+            </ul>
+            <p class="disclaimer-footer-text">
+              <strong>Remember:</strong> Just because information is publicly
+              indexed doesn't mean accessing or exploiting it is legal or
+              ethical.
+            </p>
+          </div>
+        </section>
 
         <section class="github-section">
           <p>
@@ -1980,6 +2092,10 @@
             >. If you like it,
             <span class="highlight-purple">⭐ star the repo</span>!
           </p>
+
+          <div class="about-footer">
+            Built with ❤️ for the OSINT and cybersecurity community
+          </div>
         </section>
       </div>
     </div>
